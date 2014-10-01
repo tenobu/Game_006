@@ -81,11 +81,11 @@
 		98CDD6DA19DBF3D100A83271 /* Game_006 */ = {
 			isa = PBXGroup;
 			children = (
+				98CDD6E519DBF3D100A83271 /* Main.storyboard */,
 				98CDD6DF19DBF3D100A83271 /* AppDelegate.h */,
 				98CDD6E019DBF3D100A83271 /* AppDelegate.m */,
 				98CDD6E219DBF3D100A83271 /* ViewController.h */,
 				98CDD6E319DBF3D100A83271 /* ViewController.m */,
-				98CDD6E519DBF3D100A83271 /* Main.storyboard */,
 				98CDD6E819DBF3D100A83271 /* Images.xcassets */,
 				98CDD6EA19DBF3D100A83271 /* LaunchScreen.xib */,
 				98CDD6DB19DBF3D100A83271 /* Supporting Files */,
