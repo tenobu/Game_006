@@ -19,6 +19,8 @@
 	
 	NSString *string_1;
 	
+	NSTimer *timer, *timer2;
+	
 }
 
 //@property ReminderViewController *remin;
@@ -30,7 +32,6 @@
 {
 	//MCBrowserViewController *_browserViewController;
 	AppDelegate *app;
-	NSTimer *timer;
 	UILabel *aiteno;
 	int i;
 }
@@ -413,18 +414,18 @@ withDiscoveryInfo: (NSDictionary *)info{
  didReceiveData: (NSData *)data
 	   fromPeer: (MCPeerID *)peerID;
 {
+	
 	NSLog(@"-session: didReceiveData: fromPeer:%@", peerID.displayName);
+
  //   NSError *error;
 	
-//	dic = [NSKeyedUnarchiver unarchiveObjectWithData:data];
-//	
-//	NSString *title = [dic objectForKey:@"title"];
-//	NSString *note = [dic objectForKey:@"note"];
-//	
-//	NSLog(@"タイトル %@ 本文　%@", title, note);
-//	[self saveRiminder:title note:note];
-	
-	
+	//	dic = [NSKeyedUnarchiver unarchiveObjectWithData:data];
+	//
+	//	NSString *title = [dic objectForKey:@"title"];
+	//	NSString *note = [dic objectForKey:@"note"];
+	//
+	//	NSLog(@"タイトル %@ 本文　%@", title, note);
+	//	[self saveRiminder:title note:note];
 	
 	//    NSDictionary *json = [NSJSONSerialization JSONObjectWithData:data options:NSJSONReadingMutableLeaves error:&error];
 	//    if (!error) {
@@ -438,6 +439,12 @@ withDiscoveryInfo: (NSDictionary *)info{
 	//self.label_TekiTensu_1.text = [NSString stringWithFormat: @"敵１    %@", string];
 	string_1 = [NSString stringWithFormat: @"敵１    %@", string];
 	
+	timer2 = [NSTimer scheduledTimerWithTimeInterval: 0.1
+											  target: self
+											selector: @selector( tamaDown )
+											userInfo: nil
+											 repeats: NO];
+
 }
 
 // 相手からストリームデータを受けた
@@ -602,6 +609,12 @@ withDiscoveryInfo: (NSDictionary *)info{
 		NSLog( @"%@", error );
 		
 	}
+	
+}
+
+- (void)tamaDown
+{
+
 	
 }
 
