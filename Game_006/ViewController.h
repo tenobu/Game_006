@@ -27,12 +27,16 @@
 
 @interface ViewController : UIViewController < MCNearbyServiceAdvertiserDelegate, MCNearbyServiceBrowserDelegate, NSStreamDelegate,MCBrowserViewControllerDelegate, MCSessionDelegate, MCAdvertiserAssistantDelegate >
 {
-	
+
+@private
+
 }
+
 
 @property MCAdvertiserAssistant *assistant;
 
 @property (weak, nonatomic) IBOutlet UIButton *adButton;
+@property (weak, nonatomic) IBOutlet UIImageView *imageView_Ana;
 
 //@property MCSession *session;
 //@property NSString *serviceType;

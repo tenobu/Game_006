@@ -19,7 +19,17 @@
 	
 	NSString *string_1;
 	
-	NSTimer *timer, *timer2;
+	NSTimer *timer, *timer2, *timer_Kieru;
+	
+	
+	UIImageView *imageView_[4];
+
+	UIAccelerationValue speedX_[4];
+	UIAccelerationValue speedY_[4];
+
+	NSInteger integer_BallCount;
+	
+	NSMutableArray *array_Ball;
 	
 }
 
@@ -105,7 +115,16 @@
 										   userInfo: nil
 											repeats: YES];
 	
-	self.label_TekiTensu_1.text = @"aaaa";
+	//背景色を白に指定
+	self.view.backgroundColor = [UIColor whiteColor];
+	
+	array_Ball = [[NSMutableArray alloc] init];
+	
+	[self initBall: 1];
+	
+	self.label_TekiTensu_2.hidden = YES;
+	self.label_TekiTensu_3.hidden = YES;
+	self.label_TekiTensu_4.hidden = YES;
 	
 }
 
@@ -130,6 +149,74 @@
 {
 	[super didReceiveMemoryWarning];
 	// Dispose of any resources that can be recreated.
+}
+
+- (void)viewWillAppear:(BOOL)animated
+{
+	[super viewWillAppear:animated];
+	
+	//加速度センサーからの値取得開始
+	UIAccelerometer *accelerometer = [UIAccelerometer sharedAccelerometer];
+	accelerometer.updateInterval = 1.0 / 30.0;
+	accelerometer.delegate = self;
+}
+
+- (void)viewWillDisappear:(BOOL)animated
+{
+	[super viewWillDisappear:animated];
+	speedX_ = speedY_ = 0.0;
+	
+	//加速度センサーからの値取得終了
+	UIAccelerometer *accelerometer = [UIAccelerometer sharedAccelerometer];
+	accelerometer.delegate = nil;
+}
+
+//加速度センサーからの通知
+- (void)accelerometer:(UIAccelerometer *)accelerometer
+		didAccelerate:(UIAcceleration *)acceleration
+{
+	speedX_ += acceleration.x;
+	speedY_ += acceleration.y;
+	CGFloat posX = imageView_.center.x + speedX_;
+	CGFloat posY = imageView_.center.y - speedY_;
+	
+	//端にあたったら跳ね返る処理
+	if (posX < 0.0) {
+		posX = 0.0;
+		
+		//左の壁にあたったら0.4倍の力で跳ね返る
+		speedX_ *= -0.4;
+	} else if (posX > self.view.bounds.size.width) {
+		posX = self.view.bounds.size.width;
+		
+		//右の壁にあたったら0.4倍の力で跳ね返る
+		speedX_ *= -0.4;
+	}
+	if (posY < 0.0) {
+		posY = 0.0;
+		
+		//上の壁にあたっても跳ね返らない
+		speedY_ = 0.0;
+	} else if (posY > self.view.bounds.size.height) {
+		posY = self.view.bounds.size.height;
+		
+		//下の壁にあたったら1.5倍の力で跳ね返る
+		speedY_ *= -1.5;
+	}
+	imageView_.center = CGPointMake(posX, posY);
+}
+
+//ローパスフィルタ
+- (CGFloat)lowpassFilter:(CGFloat)accel before:(CGFloat)before
+{
+	static const CGFloat kFilteringFactor = 0.1;
+	return (accel * kFilteringFactor) + (before * (1.0 - kFilteringFactor));
+}
+
+//ハイパスフィルタ
+- (CGFloat)highpassFilter:(CGFloat)accel before:(CGFloat)before
+{
+	return (accel - [self lowpassFilter:accel before:before]);
 }
 
 - (void)showAlert:(NSString *)title message:(NSString *)message
@@ -324,6 +411,8 @@
 //	}
 
 	self.label_TekiTensu_1.text = string_1;
+	
+	[self tamaDown];
 	
 }
 
@@ -612,9 +701,81 @@ withDiscoveryInfo: (NSDictionary *)info{
 	
 }
 
-- (void)tamaDown
+- (void)initBall
 {
 
+	NSMutableDictionary *dic = [[NSMutableDictionary alloc] init];
+	
+	//UIImageView追加
+	UIImage* image = [UIImage imageNamed: @"ball.png"];
+	
+	imageView_ = [[UIImageView alloc] initWithImage: image];
+	imageView_.center = self.view.center;
+	imageView_.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin |
+	UIViewAutoresizingFlexibleRightMargin |
+	UIViewAutoresizingFlexibleTopMargin |
+	UIViewAutoresizingFlexibleBottomMargin;
+	
+	[self.view addSubview:imageView_];
+	
+	
+}
+- (void)tamaDown
+{
+	
+	NSInteger ix = imageView_.center.x;
+	NSInteger iy = imageView_.center.y;
+	NSInteger ax = self.imageView_Ana.center.x;
+	NSInteger ay = self.imageView_Ana.center.y;
+	
+	NSLog( @"%ld > %ld && %ld < %ld && %ld > %ld && %ld < %ld", ix, ax - 20, ix, ax + 20, iy, ay - 20, iy, ay + 20 );
+	
+	if ( ix > ax - 20 && ix < ax + 20 &&
+		iy > ay - 20 && iy < ay + 20     ) {
+		
+		imageView_.hidden = YES;
+		
+		integer_MyTensu += 10;
+		
+		NSString *string = [NSString stringWithFormat: @"%06ld", integer_MyTensu];
+		self.label_MyTensu.text = [NSString stringWithFormat: @"自分    %@", string];
+		
+		NSError *error = nil;
+		
+		//送信する文字列を作成
+		//NSData へ文字列を変換
+		NSData *data = [string dataUsingEncoding: NSUTF8StringEncoding];
+		
+		//送信先の Peer を指定する
+		NSArray *peerIDs = self.session.connectedPeers;
+		
+		[self.session sendData: data
+					   toPeers: peerIDs
+					  withMode: MCSessionSendDataReliable
+						 error: &error];
+		
+		if ( error ) {
+			
+			NSLog( @"%@", error );
+			
+		}
+
+		timer_Kieru = [NSTimer scheduledTimerWithTimeInterval: 5.0
+												 target: self
+											   selector: @selector( tabaArawaru )
+											   userInfo: nil
+												repeats: NO];
+
+	}
+	
+}
+
+- (void)tabaArawaru
+{
+
+	imageView_.center = CGPointMake( 0, 0 );
+	
+	imageView_.hidden = NO;
 	
 }
 
